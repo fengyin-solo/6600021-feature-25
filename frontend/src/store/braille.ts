@@ -11,6 +11,11 @@ export const useBrailleStore = defineStore('braille', () => {
   const selectedDots = ref<number[]>([])
   const score = ref({ correct: 0, total: 0 })
   const history = ref<{ input: string; correct: boolean }[]>([])
+  const showResult = ref(false)
+
+  const correctDots = computed(() => BRAILLE_MAP[quizChar.value] || [])
+  const missedDots = computed(() => correctDots.value.filter(d => !selectedDots.value.includes(d)))
+  const extraDots = computed(() => selectedDots.value.filter(d => !correctDots.value.includes(d)))
 
   const brailleUnicode = computed(() =>
     brailleOutput.value.map(d => dotsToUnicode(d)).join('')
@@ -43,6 +48,11 @@ export const useBrailleStore = defineStore('braille', () => {
     if (correct) score.value.correct++
     history.value.unshift({ input: quizChar.value, correct })
     if (navigator.vibrate) navigator.vibrate(correct ? 100 : [100, 50, 100])
+    showResult.value = true
+  }
+
+  function nextQuiz() {
+    showResult.value = false
     generateQuiz()
   }
 
@@ -63,7 +73,8 @@ export const useBrailleStore = defineStore('braille', () => {
 
   return {
     inputText, brailleOutput, learnMode, quizChar, selectedDots, score, history,
+    showResult, correctDots, missedDots, extraDots,
     brailleUnicode, translate, reverseTranslate, generateQuiz, toggleDot,
-    checkQuizAnswer, resetScore, exportPDF
+    checkQuizAnswer, nextQuiz, resetScore, exportPDF
   }
 })
